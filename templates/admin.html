@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FP PDF - Activation Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .activation-key {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            text-align: center;
+            margin: 15px 0;
+            border: 2px dashed #667eea;
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-active {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-inactive {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .fingerprint {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 3px;
+        }
+
+        .info-box strong {
+            color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 FP PDF Activation Admin Panel</h1>
+            <p class="subtitle">Manage activation keys for the FP PDF Maker software</p>
+        </div>
+
+        <div class="card">
+            <h2>Generate New Activation Key</h2>
+            
+            <div class="success-message" id="successMessage"></div>
+            <div class="error-message" id="errorMessage"></div>
+
+            <div class="info-box">
+                <strong>Machine-Specific Keys:</strong> To generate a key for a specific machine, 
+                ask the user to run the client app once and provide their machine fingerprint from the activation dialog.
+                Leave the fingerprint field empty to allow activation on any machine (first come, first served).
+            </div>
+
+            <form id="generateKeyForm">
+                <div class="form-group">
+                    <label for="username">Username / Client Name *</label>
+                    <input type="text" id="username" name="username" placeholder="e.g., John Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fingerprint">Machine Fingerprint (Optional)</label>
+                    <input type="text" id="fingerprint" name="fingerprint" 
+                           placeholder="Leave empty for any machine, or paste specific fingerprint">
+                </div>
+
+                <button type="submit" class="btn">Generate Activation Key</button>
+            </form>
+
+            <div class="activation-key" id="generatedKey"></div>
+        </div>
+
+        <div class="card">
+            <h2>Activation Keys Database</h2>
+            <div id="keysTableContainer">
+                <div class="loading">Loading activation keys...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load activation keys on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadKeys();
+        });
+
+        // Generate new key
+        document.getElementById('generateKeyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const fingerprint = document.getElementById('fingerprint').value.trim();
+            
+            try {
+                const response = await fetch('/admin/generate-key', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        machine_fingerprint: fingerprint || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess(`Key generated successfully for ${data.username}!`);
+                    
+                    // Display the key
+                    const keyDiv = document.getElementById('generatedKey');
+                    keyDiv.innerHTML = `
+                        <strong>Activation Key:</strong><br>
+                        <span style="font-size: 24px; color: #667eea;">${data.key}</span>
+                        <button class="copy-btn" onclick="copyToClipboard('${data.key}')">Copy</button>
+                    `;
+                    keyDiv.style.display = 'block';
+
+                    // Reset form
+                    document.getElementById('generateKeyForm').reset();
+
+                    // Reload keys table
+                    loadKeys();
+                } else {
+                    showError(data.error || 'Failed to generate key');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            }
+        });
+
+        // Load all keys
+        async function loadKeys() {
+            try {
+                const response = await fetch('/admin/keys');
+                const data = await response.json();
+
+                if (data.success) {
+                    displayKeys(data.keys);
+                } else {
+                    document.getElementById('keysTableContainer').innerHTML = 
+                        '<div class="error-message" style="display:block;">Failed to load keys</div>';
+                }
+            } catch (error) {
+                document.getElementById('keysTableContainer').innerHTML = 
+                    '<div class="error-message" style="display:block;">Network error</div>';
+            }
+        }
+
+        // Display keys in table
+        function displayKeys(keys) {
+            if (keys.length === 0) {
+                document.getElementById('keysTableContainer').innerHTML = 
+                    '<p style="text-align:center; color:#666;">No activation keys generated yet.</p>';
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Activation Key</th>
+                            <th>Username</th>
+                            <th>Status</th>
+                            <th>Date Issued</th>
+                            <th>Date Activated</th>
+                            <th>Machine Fingerprint</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            keys.forEach(key => {
+                const statusClass = key.is_active ? 'status-active' : 'status-inactive';
+                const statusText = key.is_active ? 'Active' : 'Pending';
+                
+                html += `
+                    <tr>
+                        <td>${key.id}</td>
+                        <td><code>${key.key}</code></td>
+                        <td>${key.username}</td>
+                        <td class="${statusClass}">${statusText}</td>
+                        <td>${formatDate(key.issued)}</td>
+                        <td>${key.activated !== 'Not activated' ? formatDate(key.activated) : 'Not activated'}</td>
+                        <td class="fingerprint">${key.fingerprint === 'Not activated' ? 'Pending' : key.fingerprint.substring(0, 20) + '...'}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('keysTableContainer').innerHTML = html;
+        }
+
+        // Format date
+        function formatDate(isoDate) {
+            const date = new Date(isoDate);
+            return date.toLocaleString();
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const elem = document.getElementById('successMessage');
+            elem.textContent = message;
+            elem.style.display = 'block';
+            
+            const errorElem = document.getElementById('errorMessage');
+            errorElem.style.display = 'none';
+
+            setTimeout(() => {
+                elem.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const elem = document.getElementById('errorMessage');
+            elem.textContent = message;
+            elem.style.display = 'block';
+            
+            const successElem = document.getElementById('successMessage');
+            successElem.style.display = 'none';
+
+            setTimeout(() => {
+                elem.style.display = 'none';
+            }, 5000);
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Activation key copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy. Please copy manually.');
+            });
+        }
+
+        // Auto-refresh keys every 10 seconds
+        setInterval(loadKeys, 10000);
+    </script>
+</body>
+</html>
